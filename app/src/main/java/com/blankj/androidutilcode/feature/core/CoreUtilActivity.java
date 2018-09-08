@@ -3,6 +3,7 @@ package com.blankj.androidutilcode.feature.core;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.view.View;
 
 import com.blankj.androidutilcode.R;
@@ -16,35 +17,39 @@ import com.blankj.androidutilcode.feature.core.fragment.FragmentActivity;
 import com.blankj.androidutilcode.feature.core.image.ImageActivity;
 import com.blankj.androidutilcode.feature.core.keyboard.KeyboardActivity;
 import com.blankj.androidutilcode.feature.core.log.LogActivity;
+import com.blankj.androidutilcode.feature.core.meta_data.MetaDataActivity;
 import com.blankj.androidutilcode.feature.core.network.NetworkActivity;
+import com.blankj.androidutilcode.feature.core.path.PathActivity;
 import com.blankj.androidutilcode.feature.core.permission.PermissionActivity;
 import com.blankj.androidutilcode.feature.core.phone.PhoneActivity;
 import com.blankj.androidutilcode.feature.core.process.ProcessActivity;
 import com.blankj.androidutilcode.feature.core.reflect.ReflectActivity;
+import com.blankj.androidutilcode.feature.core.resource.ResourceActivity;
 import com.blankj.androidutilcode.feature.core.screen.ScreenActivity;
 import com.blankj.androidutilcode.feature.core.sdcard.SDCardActivity;
 import com.blankj.androidutilcode.feature.core.snackbar.SnackbarActivity;
 import com.blankj.androidutilcode.feature.core.sp.SPActivity;
 import com.blankj.androidutilcode.feature.core.span.SpanActivity;
 import com.blankj.androidutilcode.feature.core.toast.ToastActivity;
+import com.blankj.utilcode.util.Utils;
 
 /**
  * <pre>
  *     author: Blankj
  *     blog  : http://blankj.com
  *     time  : 2016/09/29
- *     desc  : MainActivity
+ *     desc  :
  * </pre>
  */
 public class CoreUtilActivity extends BaseBackActivity {
 
     public static void start(Context context) {
         Intent starter = new Intent(context, CoreUtilActivity.class);
-        context.startActivity(starter.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        context.startActivity(starter);
     }
 
     @Override
-    public void initData(Bundle bundle) {
+    public void initData(@Nullable Bundle bundle) {
 
     }
 
@@ -54,7 +59,8 @@ public class CoreUtilActivity extends BaseBackActivity {
     }
 
     @Override
-    public void initView(Bundle savedInstanceState, View view) {
+    public void initView(Bundle savedInstanceState, View contentView) {
+        Utils.getApp();
         getToolBar().setTitle(getString(R.string.core_util));
     }
 
@@ -112,8 +118,16 @@ public class CoreUtilActivity extends BaseBackActivity {
         LogActivity.start(this);
     }
 
+    public void metaDataClick(View view) {
+        MetaDataActivity.start(this);
+    }
+
     public void networkClick(View view) {
         NetworkActivity.start(this);
+    }
+
+    public void pathClick(View view) {
+        PathActivity.start(this);
     }
 
     public void permissionClick(View view) {
@@ -130,6 +144,10 @@ public class CoreUtilActivity extends BaseBackActivity {
 
     public void reflectClick(View view) {
         ReflectActivity.start(this);
+    }
+
+    public void resourceClick(View view) {
+        ResourceActivity.start(this);
     }
 
     public void screenClick(View view) {

@@ -1,6 +1,7 @@
 package com.blankj.utilcode.util;
 
 import android.content.Context;
+import android.os.Environment;
 import android.os.storage.StorageManager;
 
 import java.lang.reflect.Array;
@@ -25,6 +26,27 @@ public final class SDCardUtils {
     }
 
     /**
+     * Return whether sdcard is enabled by environment.
+     *
+     * @return true : enabled<br>false : disabled
+     */
+    public static boolean isSDCardEnableByEnvironment() {
+        return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
+    }
+
+    /**
+     * Return the path of sdcard by environment.
+     *
+     * @return the path of sdcard by environment
+     */
+    public static String getSDCardPathByEnvironment() {
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+            return Environment.getExternalStorageDirectory().getAbsolutePath();
+        }
+        return "";
+    }
+
+    /**
      * Return whether sdcard is enabled.
      *
      * @return true : enabled<br>false : disabled
@@ -45,7 +67,9 @@ public final class SDCardUtils {
                 (StorageManager) Utils.getApp().getSystemService(Context.STORAGE_SERVICE);
         try {
             Class<?> storageVolumeClazz = Class.forName("android.os.storage.StorageVolume");
+            //noinspection JavaReflectionMemberAccess
             Method getVolumeList = StorageManager.class.getMethod("getVolumeList");
+            //noinspection JavaReflectionMemberAccess
             Method getPath = storageVolumeClazz.getMethod("getPath");
             Method isRemovable = storageVolumeClazz.getMethod("isRemovable");
             Object result = getVolumeList.invoke(sm);
@@ -80,6 +104,7 @@ public final class SDCardUtils {
                 .getSystemService(Context.STORAGE_SERVICE);
         List<String> paths = new ArrayList<>();
         try {
+            //noinspection JavaReflectionMemberAccess
             Method getVolumePathsMethod = StorageManager.class.getMethod("getVolumePaths");
             getVolumePathsMethod.setAccessible(true);
             Object invoke = getVolumePathsMethod.invoke(storageManager);

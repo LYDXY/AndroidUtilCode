@@ -2,6 +2,7 @@ package com.blankj.androidutilcode;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
@@ -11,6 +12,7 @@ import com.blankj.androidutilcode.base.BaseDrawerActivity;
 import com.blankj.androidutilcode.feature.core.CoreUtilActivity;
 import com.blankj.androidutilcode.feature.sub.SubUtilActivity;
 import com.blankj.utilcode.util.BarUtils;
+import com.blankj.utilcode.util.EncryptUtils;
 
 /**
  * <pre>
@@ -23,7 +25,7 @@ import com.blankj.utilcode.util.BarUtils;
 public class MainActivity extends BaseDrawerActivity {
 
     @Override
-    public void initData(Bundle bundle) {
+    public void initData(@Nullable Bundle bundle) {
 
     }
 
@@ -33,7 +35,7 @@ public class MainActivity extends BaseDrawerActivity {
     }
 
     @Override
-    public void initView(Bundle savedInstanceState, View view) {
+    public void initView(Bundle savedInstanceState, View contentView) {
         Toolbar toolbar = findViewById(R.id.toolbar);
         View fakeStatusBar = findViewById(R.id.fake_status_bar);
         CollapsingToolbarLayout ctl = findViewById(R.id.ctl);

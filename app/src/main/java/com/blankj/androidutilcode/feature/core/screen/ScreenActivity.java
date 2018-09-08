@@ -3,12 +3,14 @@ package com.blankj.androidutilcode.feature.core.screen;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.blankj.androidutilcode.R;
 import com.blankj.androidutilcode.base.BaseActivity;
+import com.blankj.utilcode.util.LogUtils;
 import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.SpanUtils;
 
@@ -17,7 +19,7 @@ import com.blankj.utilcode.util.SpanUtils;
  *     author: Blankj
  *     blog  : http://blankj.com
  *     time  : 2016/09/27
- *     desc  : Screen 工具类 Demo
+ *     desc  : demo about ScreenUtils
  * </pre>
  */
 public class ScreenActivity extends BaseActivity {
@@ -31,7 +33,7 @@ public class ScreenActivity extends BaseActivity {
     }
 
     @Override
-    public void initData(Bundle bundle) {
+    public void initData(@Nullable Bundle bundle) {
 
     }
 
@@ -41,7 +43,7 @@ public class ScreenActivity extends BaseActivity {
     }
 
     @Override
-    public void initView(Bundle savedInstanceState, View view) {
+    public void initView(Bundle savedInstanceState, View contentView) {
         ivScreenshot = findViewById(R.id.iv_screenshot);
         tvAboutScreen = findViewById(R.id.tv_about_screen);
         findViewById(R.id.btn_set_fullscreen).setOnClickListener(this);
@@ -49,6 +51,7 @@ public class ScreenActivity extends BaseActivity {
         findViewById(R.id.btn_set_portrait).setOnClickListener(this);
         findViewById(R.id.btn_screenshot).setOnClickListener(this);
         findViewById(R.id.btn_set_sleep_duration).setOnClickListener(this);
+        findViewById(R.id.btn_test_adapt_screen).setOnClickListener(this);
 
         updateAboutScreen();
     }
@@ -76,6 +79,9 @@ public class ScreenActivity extends BaseActivity {
             case R.id.btn_set_sleep_duration:
                 ScreenUtils.setSleepDuration(100000);
                 updateAboutScreen();
+                break;
+            case R.id.btn_test_adapt_screen:
+                ScreenAdaptActivity.start(this);
                 break;
         }
     }

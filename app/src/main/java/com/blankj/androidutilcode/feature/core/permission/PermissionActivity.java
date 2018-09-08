@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.TextView;
 
@@ -24,7 +25,7 @@ import java.util.List;
  *     author: Blankj
  *     blog  : http://blankj.com
  *     time  : 2018/01/01
- *     desc  : Permission 工具类 Demo
+ *     desc  : demo about PermissionUtils
  * </pre>
  */
 public class PermissionActivity extends BaseBackActivity {
@@ -38,7 +39,7 @@ public class PermissionActivity extends BaseBackActivity {
     }
 
     @Override
-    public void initData(Bundle bundle) {
+    public void initData(@Nullable Bundle bundle) {
 
     }
 
@@ -48,13 +49,14 @@ public class PermissionActivity extends BaseBackActivity {
     }
 
     @Override
-    public void initView(Bundle savedInstanceState, View view) {
+    public void initView(Bundle savedInstanceState, View contentView) {
         getToolBar().setTitle(getString(R.string.demo_permission));
 
         tvAboutPermission = findViewById(R.id.tv_about_permission);
         findViewById(R.id.btn_open_app_settings).setOnClickListener(this);
         findViewById(R.id.btn_request_calendar).setOnClickListener(this);
         findViewById(R.id.btn_request_record_audio).setOnClickListener(this);
+        findViewById(R.id.btn_request_calendar_and_record_audio).setOnClickListener(this);
 
         StringBuilder sb = new StringBuilder();
         for (String s : PermissionUtils.getPermissions()) {
@@ -114,6 +116,32 @@ public class PermissionActivity extends BaseBackActivity {
                 break;
             case R.id.btn_request_record_audio:
                 PermissionUtils.permission(PermissionConstants.MICROPHONE)
+                        .rationale(new PermissionUtils.OnRationaleListener() {
+                            @Override
+                            public void rationale(final ShouldRequest shouldRequest) {
+                                DialogHelper.showRationaleDialog(shouldRequest);
+                            }
+                        })
+                        .callback(new PermissionUtils.FullCallback() {
+                            @Override
+                            public void onGranted(List<String> permissionsGranted) {
+                                updateAboutPermission();
+                                LogUtils.d(permissionsGranted);
+                            }
+
+                            @Override
+                            public void onDenied(List<String> permissionsDeniedForever,
+                                                 List<String> permissionsDenied) {
+                                if (!permissionsDeniedForever.isEmpty()) {
+                                    DialogHelper.showOpenAppSettingDialog();
+                                }
+                                LogUtils.d(permissionsDeniedForever, permissionsDenied);
+                            }
+                        })
+                        .request();
+                break;
+            case R.id.btn_request_calendar_and_record_audio:
+                PermissionUtils.permission(PermissionConstants.CALENDAR, PermissionConstants.MICROPHONE)
                         .rationale(new PermissionUtils.OnRationaleListener() {
                             @Override
                             public void rationale(final ShouldRequest shouldRequest) {

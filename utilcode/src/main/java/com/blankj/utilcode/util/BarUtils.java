@@ -1,7 +1,6 @@
 package com.blankj.utilcode.util;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
@@ -10,6 +9,7 @@ import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.annotation.RequiresPermission;
 import android.support.v4.widget.DrawerLayout;
 import android.util.TypedValue;
@@ -41,7 +41,8 @@ public final class BarUtils {
     private static final int    DEFAULT_ALPHA = 112;
     private static final String TAG_COLOR     = "TAG_COLOR";
     private static final String TAG_ALPHA     = "TAG_ALPHA";
-    private static final int    TAG_OFFSET    = -123;
+    private static final String TAG_OFFSET    = "TAG_OFFSET";
+    private static final int    KEY_OFFSET    = -123;
 
     private BarUtils() {
         throw new UnsupportedOperationException("u can't instantiate me...");
@@ -53,7 +54,7 @@ public final class BarUtils {
      * @return the status bar's height
      */
     public static int getStatusBarHeight() {
-        Resources resources = Utils.getApp().getResources();
+        Resources resources = Resources.getSystem();
         int resourceId = resources.getIdentifier("status_bar_height", "dimen", "android");
         return resources.getDimensionPixelSize(resourceId);
     }
@@ -79,8 +80,14 @@ public final class BarUtils {
                                               final boolean isVisible) {
         if (isVisible) {
             window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            showColorView(window);
+            showAlphaView(window);
+            addMarginTopEqualStatusBarHeight(window);
         } else {
             window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            hideColorView(window);
+            hideAlphaView(window);
+            subtractMarginTopEqualStatusBarHeight(window);
         }
     }
 
@@ -136,14 +143,15 @@ public final class BarUtils {
      */
     public static void addMarginTopEqualStatusBarHeight(@NonNull View view) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return;
-        Object haveSetOffset = view.getTag(TAG_OFFSET);
+        view.setTag(TAG_OFFSET);
+        Object haveSetOffset = view.getTag(KEY_OFFSET);
         if (haveSetOffset != null && (Boolean) haveSetOffset) return;
         MarginLayoutParams layoutParams = (MarginLayoutParams) view.getLayoutParams();
         layoutParams.setMargins(layoutParams.leftMargin,
                 layoutParams.topMargin + getStatusBarHeight(),
                 layoutParams.rightMargin,
                 layoutParams.bottomMargin);
-        view.setTag(TAG_OFFSET, true);
+        view.setTag(KEY_OFFSET, true);
     }
 
     /**
@@ -153,14 +161,28 @@ public final class BarUtils {
      */
     public static void subtractMarginTopEqualStatusBarHeight(@NonNull View view) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return;
-        Object haveSetOffset = view.getTag(TAG_OFFSET);
+        Object haveSetOffset = view.getTag(KEY_OFFSET);
         if (haveSetOffset == null || !(Boolean) haveSetOffset) return;
         MarginLayoutParams layoutParams = (MarginLayoutParams) view.getLayoutParams();
         layoutParams.setMargins(layoutParams.leftMargin,
                 layoutParams.topMargin - getStatusBarHeight(),
                 layoutParams.rightMargin,
                 layoutParams.bottomMargin);
-        view.setTag(TAG_OFFSET, false);
+        view.setTag(KEY_OFFSET, false);
+    }
+
+    public static void addMarginTopEqualStatusBarHeight(final Window window) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return;
+        View withTag = window.getDecorView().findViewWithTag(TAG_OFFSET);
+        if (withTag == null) return;
+        addMarginTopEqualStatusBarHeight(withTag);
+    }
+
+    private static void subtractMarginTopEqualStatusBarHeight(final Window window) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return;
+        View withTag = window.getDecorView().findViewWithTag(TAG_OFFSET);
+        if (withTag == null) return;
+        subtractMarginTopEqualStatusBarHeight(withTag);
     }
 
     /**
@@ -232,7 +254,7 @@ public final class BarUtils {
         transparentStatusBar((Activity) fakeStatusBar.getContext());
         ViewGroup.LayoutParams layoutParams = fakeStatusBar.getLayoutParams();
         layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
-        layoutParams.height = BarUtils.getStatusBarHeight();
+        layoutParams.height = getStatusBarHeight();
         fakeStatusBar.setBackgroundColor(getStatusBarColor(color, alpha));
     }
 
@@ -295,7 +317,7 @@ public final class BarUtils {
         transparentStatusBar((Activity) fakeStatusBar.getContext());
         ViewGroup.LayoutParams layoutParams = fakeStatusBar.getLayoutParams();
         layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
-        layoutParams.height = BarUtils.getStatusBarHeight();
+        layoutParams.height = getStatusBarHeight();
         fakeStatusBar.setBackgroundColor(Color.argb(alpha, 0, 0, 0));
     }
 
@@ -407,7 +429,7 @@ public final class BarUtils {
             }
             fakeStatusBarView.setBackgroundColor(getStatusBarColor(color, alpha));
         } else {
-            parent.addView(createColorStatusBarView(parent.getContext(), color, alpha));
+            parent.addView(createColorStatusBarView(activity, color, alpha));
         }
     }
 
@@ -424,22 +446,44 @@ public final class BarUtils {
             }
             fakeStatusBarView.setBackgroundColor(Color.argb(alpha, 0, 0, 0));
         } else {
-            parent.addView(createAlphaStatusBarView(parent.getContext(), alpha));
+            parent.addView(createAlphaStatusBarView(activity, alpha));
         }
     }
 
     private static void hideColorView(final Activity activity) {
-        ViewGroup decorView = (ViewGroup) activity.getWindow().getDecorView();
+        hideColorView(activity.getWindow());
+    }
+
+    private static void hideAlphaView(final Activity activity) {
+        hideAlphaView(activity.getWindow());
+    }
+
+    private static void hideColorView(final Window window) {
+        ViewGroup decorView = (ViewGroup) window.getDecorView();
         View fakeStatusBarView = decorView.findViewWithTag(TAG_COLOR);
         if (fakeStatusBarView == null) return;
         fakeStatusBarView.setVisibility(View.GONE);
     }
 
-    private static void hideAlphaView(final Activity activity) {
-        ViewGroup decorView = (ViewGroup) activity.getWindow().getDecorView();
+    private static void hideAlphaView(final Window window) {
+        ViewGroup decorView = (ViewGroup) window.getDecorView();
         View fakeStatusBarView = decorView.findViewWithTag(TAG_ALPHA);
         if (fakeStatusBarView == null) return;
         fakeStatusBarView.setVisibility(View.GONE);
+    }
+
+    private static void showColorView(final Window window) {
+        ViewGroup decorView = (ViewGroup) window.getDecorView();
+        View fakeStatusBarView = decorView.findViewWithTag(TAG_COLOR);
+        if (fakeStatusBarView == null) return;
+        fakeStatusBarView.setVisibility(View.VISIBLE);
+    }
+
+    private static void showAlphaView(final Window window) {
+        ViewGroup decorView = (ViewGroup) window.getDecorView();
+        View fakeStatusBarView = decorView.findViewWithTag(TAG_ALPHA);
+        if (fakeStatusBarView == null) return;
+        fakeStatusBarView.setVisibility(View.VISIBLE);
     }
 
     private static int getStatusBarColor(final int color, final int alpha) {
@@ -551,7 +595,7 @@ public final class BarUtils {
      * @return the navigation bar's height
      */
     public static int getNavBarHeight() {
-        Resources res = Utils.getApp().getResources();
+        Resources res = Resources.getSystem();
         int resourceId = res.getIdentifier("navigation_bar_height", "dimen", "android");
         if (resourceId != 0) {
             return res.getDimensionPixelSize(resourceId);
@@ -564,7 +608,7 @@ public final class BarUtils {
      * Set the navigation bar's visibility.
      *
      * @param activity  The activity.
-     * @param isVisible True to set notification bar visible, false otherwise.
+     * @param isVisible True to set navigation bar visible, false otherwise.
      */
     public static void setNavBarVisibility(@NonNull final Activity activity, boolean isVisible) {
         setNavBarVisibility(activity.getWindow(), isVisible);
@@ -574,7 +618,7 @@ public final class BarUtils {
      * Set the navigation bar's visibility.
      *
      * @param window    The window.
-     * @param isVisible True to set notification bar visible, false otherwise.
+     * @param isVisible True to set navigation bar visible, false otherwise.
      */
     public static void setNavBarVisibility(@NonNull final Window window, boolean isVisible) {
         if (isVisible) {
@@ -594,7 +638,7 @@ public final class BarUtils {
      *
      * @param activity The activity.
      */
-    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
     public static void setNavBarImmersive(@NonNull final Activity activity) {
         setNavBarImmersive(activity.getWindow());
     }
@@ -604,7 +648,7 @@ public final class BarUtils {
      *
      * @param window The window.
      */
-    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
     public static void setNavBarImmersive(@NonNull final Window window) {
         View decorView = window.getDecorView();
         window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
@@ -612,6 +656,50 @@ public final class BarUtils {
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
         decorView.setSystemUiVisibility(uiOptions);
+    }
+
+    /**
+     * Set the navigation bar's color.
+     *
+     * @param activity The activity.
+     * @param color    The navigation bar's color.
+     */
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    public static void setNavBarColor(@NonNull final Activity activity, @ColorInt final int color) {
+        setNavBarColor(activity.getWindow(), color);
+    }
+
+    /**
+     * Set the navigation bar's color.
+     *
+     * @param window The window.
+     * @param color  The navigation bar's color.
+     */
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    public static void setNavBarColor(@NonNull final Window window, @ColorInt final int color) {
+        window.setNavigationBarColor(color);
+    }
+
+    /**
+     * Return the color of navigation bar.
+     *
+     * @param activity The activity.
+     * @return the color of navigation bar
+     */
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    public static int getNavBarColor(@NonNull final Activity activity) {
+        return getNavBarColor(activity.getWindow());
+    }
+
+    /**
+     * Return the color of navigation bar.
+     *
+     * @param window The window.
+     * @return the color of navigation bar
+     */
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    public static int getNavBarColor(@NonNull final Window window) {
+        return window.getNavigationBarColor();
     }
 
     /**
